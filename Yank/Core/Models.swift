@@ -46,11 +46,11 @@ enum DownloadFormat: String, Codable, CaseIterable, Identifiable {
 }
 
 enum JobState: String, Codable {
-    case queued, fetching, downloading, processing, exporting, completed, failed, canceled
+    case queued, fetching, downloading, serverPreparing, processing, exporting, completed, failed, canceled
 
     var isActive: Bool {
         switch self {
-        case .queued, .fetching, .downloading, .processing, .exporting: return true
+        case .queued, .fetching, .downloading, .serverPreparing, .processing, .exporting: return true
         default: return false
         }
     }
@@ -60,6 +60,7 @@ enum JobState: String, Codable {
         case .queued: return "state_queued"
         case .fetching: return "state_fetching"
         case .downloading: return "state_downloading"
+        case .serverPreparing: return "state_server"
         case .processing: return "state_processing"
         case .exporting: return "state_exporting"
         case .completed: return "state_completed"
@@ -86,6 +87,8 @@ struct DownloadJob: Codable, Identifiable, Equatable {
     /// Documents 폴더 안의 파일 이름 (앱을 다시 설치해도 경로가 바뀌지 않게 이름만 저장)
     var outputFile: String?
     var savedToPhotos: Bool = false
+    /// 직접 받기가 막혀서(403 등) 파이 서버를 거친 작업
+    var viaServer: Bool = false
     var error: String?
     var createdAt: Date = Date()
     var finishedAt: Date?

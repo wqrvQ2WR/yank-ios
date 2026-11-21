@@ -29,6 +29,10 @@ final class AppSettings: ObservableObject {
     @Published var filenameTemplate: String { didSet { d.set(filenameTemplate, forKey: "filenameTemplate") } }
     @Published var theme: ThemeMode { didSet { d.set(theme.rawValue, forKey: "theme") } }
     @Published var autoDownloadNew: Bool { didSet { d.set(autoDownloadNew, forKey: "autoDownloadNew") } }
+    /// 직접 받기가 막힌 영상을 대신 받아 줄 서버(yank-pi). 토큰은 소스에 넣지 않고 사용자가 설정에 붙여 넣는다.
+    @Published var serverEnabled: Bool { didSet { d.set(serverEnabled, forKey: "serverEnabled") } }
+    @Published var serverURL: String { didSet { d.set(serverURL, forKey: "serverURL") } }
+    @Published var serverToken: String { didSet { d.set(serverToken, forKey: "serverToken") } }
 
     init() {
         defaultFormat = DownloadFormat(rawValue: d.string(forKey: "defaultFormat") ?? "") ?? .best
@@ -38,6 +42,9 @@ final class AppSettings: ObservableObject {
         filenameTemplate = d.string(forKey: "filenameTemplate") ?? "%(title)s.%(ext)s"
         theme = ThemeMode(rawValue: d.string(forKey: "theme") ?? "") ?? .light
         autoDownloadNew = d.object(forKey: "autoDownloadNew") as? Bool ?? true
+        serverEnabled = d.object(forKey: "serverEnabled") as? Bool ?? true
+        serverURL = d.string(forKey: "serverURL") ?? "http://pi.taild4dc8e.ts.net:8260"
+        serverToken = d.string(forKey: "serverToken") ?? ""
     }
 }
 

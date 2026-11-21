@@ -16,12 +16,20 @@ enum StreamDownloader {
     @discardableResult
     static func download(_ format: StreamFormat, userAgent: String, to dest: URL,
                          onBytes: @escaping (Int64) -> Void) async throws -> Int64 {
+        try await ranged(url: format.url, headers: ["User-Agent": userAgent], knownSize: format.contentLength,
+                         chunk: chunk, to: dest, onBytes: onBytes)
+    }
+
+    /// Range 조각으로 파일 하나를 받는다. 유튜브 스트림과 파이 서버 결과 파일이 함께 쓴다.
+    @discardableResult
+    static func ranged(url: URL, headers: [String: String], knownSize: Int64, chunk: Int64, to dest: URL,
+                       onBytes: @escaping (Int64) -> Void) async throws -> Int64 {
         FileManager.default.createFile(atPath: dest.path, contents: nil)
         let out = try FileHandle(forWritingTo: dest)
         defer { try? out.close() }
 
         var offset: Int64 = 0
-        var total: Int64 = format.contentLength
+        var total: Int64 = knownSize
         while total == 0 || offset < total {
             try Task.checkCancellation()
             let end = offset + chunk - 1
@@ -29,12 +37,14 @@ enum StreamDownloader {
             var done = false
             for attempt in 0..<4 {
                 do {
-                    var req = URLRequest(url: format.url)
-                    req.setValue(userAgent, forHTTPHeaderField: "User-Agent")
+                    var req = URLRequest(url: url)
+                    headers.forEach { req.setValue($0.value, forHTTPHeaderField: $0.key) }
                     req.setValue("bytes=\(offset)-\(end)", forHTTPHeaderField: "Range")
                     let (tmp, resp) = try await session.download(for: req)
                     defer { try? FileManager.default.removeItem(at: tmp) }
                     guard let http = resp as? HTTPURLResponse else { throw YankError.http(0) }
+                    // 403/401 은 다시 해도 같다. 바로 알린다.
+                    if http.statusCode == 403 || http.statusCode == 401 { throw YankError.http(http.statusCode) }
                     guard http.statusCode == 200 || http.statusCode == 206 else { throw YankError.http(http.statusCode) }
                     if total == 0, let cr = http.value(forHTTPHeaderField: "Content-Range"),
                        let t = Int64(cr.split(separator: "/").last ?? "") { total = t }
@@ -50,13 +60,15 @@ enum StreamDownloader {
                     throw CancellationError()
                 } catch let e as URLError where e.code == .cancelled {
                     throw CancellationError()
+                } catch YankError.http(let code) where code == 403 || code == 401 {
+                    throw YankError.http(code)
                 } catch {
                     lastError = error
                     try? await Task.sleep(nanoseconds: UInt64(500_000_000 * (attempt + 1)))
                 }
             }
             if !done { throw lastError ?? YankError.http(0) }
-            if total == 0 { total = offset }   // 크기를 끝내 몰라도 무한 루프 방지는 위 n==0 이 한다
+            if total == 0 { total = offset }
             if total > 0, offset >= total { break }
         }
         return offset

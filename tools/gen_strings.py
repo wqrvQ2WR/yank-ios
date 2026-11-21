@@ -30,6 +30,17 @@ extra = {
     "photos_saved": {"en": "Saved to Photos and Files", "ko": "사진·파일에 저장됨", "ja": "写真とファイルに保存済み", "es": "Guardado en Fotos y Archivos", "zh-Hans": "已保存到照片和文件"},
     "files_saved": {"en": "Saved to Files", "ko": "파일 앱에 저장됨", "ja": "ファイルに保存済み", "es": "Guardado en Archivos", "zh-Hans": "已保存到文件"},
     "sub_auto_desc": {"en": "Checked when you open Yank (about once an hour). Videos already there when you subscribe are skipped.", "ko": "Yank 를 열 때 확인해요(약 1시간에 한 번). 구독 전에 올라와 있던 영상은 받지 않아요.", "ja": "Yankを開いたときに確認します(約1時間に1回)。登録前の動画は取得しません。", "es": "Se comprueba al abrir Yank (cada hora aprox.). Los vídeos anteriores a la suscripción se omiten.", "zh-Hans": "打开 Yank 时检查(约每小时一次)。订阅前已有的视频不会下载。"},
+    "state_server": {"en": "Preparing on server", "ko": "서버에서 준비 중", "ja": "サーバーで準備中", "es": "Preparando en el servidor", "zh-Hans": "服务器准备中"},
+    "via_server": {"en": "via server", "ko": "서버 경유", "ja": "サーバー経由", "es": "vía servidor", "zh-Hans": "经服务器"},
+    "error_blocked_no_server": {"en": "YouTube blocked this video for direct download. Set up the Yank server in Settings.", "ko": "유튜브가 이 영상의 직접 받기를 막았어요. 설정에서 Yank 서버를 연결하세요.", "ja": "YouTubeがこの動画の直接ダウンロードを拒否しました。設定でYankサーバーを接続してください。", "es": "YouTube bloqueó la descarga directa de este vídeo. Configura el servidor Yank en Ajustes.", "zh-Hans": "YouTube 阻止了此视频的直接下载。请在设置中连接 Yank 服务器。"},
+    "settings_server": {"en": "Yank server (for blocked videos)", "ko": "Yank 서버 (막힌 영상용)", "ja": "Yankサーバー (ブロックされた動画用)", "es": "Servidor Yank (vídeos bloqueados)", "zh-Hans": "Yank 服务器(用于被阻止的视频)"},
+    "settings_server_use": {"en": "Use server when direct download is blocked", "ko": "직접 받기가 막히면 서버 사용", "ja": "直接ダウンロードが拒否されたらサーバーを使う", "es": "Usar servidor si la descarga directa se bloquea", "zh-Hans": "直接下载被阻止时使用服务器"},
+    "settings_server_url": {"en": "Server address", "ko": "서버 주소", "ja": "サーバーアドレス", "es": "Dirección del servidor", "zh-Hans": "服务器地址"},
+    "settings_server_token": {"en": "Token", "ko": "토큰", "ja": "トークン", "es": "Token", "zh-Hans": "令牌"},
+    "settings_server_desc": {"en": "A server you run (yank-pi) downloads with yt-dlp and sends the file back. Needs Tailscale on this iPhone when away from home.", "ko": "직접 돌리는 서버(yank-pi)가 yt-dlp 로 받아서 파일을 보내 줘요. 밖에서는 이 iPhone 에서 테일스케일을 켜 둬야 해요.", "ja": "自分で動かすサーバー(yank-pi)がyt-dlpでダウンロードしてファイルを送ります。外出先ではこのiPhoneでTailscaleをオンにしてください。", "es": "Un servidor propio (yank-pi) descarga con yt-dlp y envía el archivo. Fuera de casa necesitas Tailscale activo en este iPhone.", "zh-Hans": "你自己运行的服务器(yank-pi)用 yt-dlp 下载并回传文件。外出时需在此 iPhone 上开启 Tailscale。"},
+    "settings_server_test": {"en": "Test connection", "ko": "연결 확인", "ja": "接続を確認", "es": "Probar conexión", "zh-Hans": "测试连接"},
+    "server_ok": {"en": "Connected", "ko": "연결됐어요", "ja": "接続できました", "es": "Conectado", "zh-Hans": "已连接"},
+    "server_fail": {"en": "Connection failed: %@", "ko": "연결 실패: %@", "ja": "接続失敗: %@", "es": "Error de conexión: %@", "zh-Hans": "连接失败: %@"},
 }
 for k, v in extra.items():
     table[k] = v

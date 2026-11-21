@@ -28,6 +28,7 @@ cat > $APP/Contents/Info.plist <<'PL'
 <key>CFBundleExecutable</key><string>Yank</string><key>CFBundleIdentifier</key><string>com.hayoonjae.yank.preview</string>
 <key>CFBundleName</key><string>Yank</string><key>CFBundlePackageType</key><string>APPL</string><key>CFBundleShortVersionString</key><string>1.0.0</string>
 <key>CFBundleDevelopmentRegion</key><string>en</string><key>NSPhotoLibraryAddUsageDescription</key><string>Save videos</string>
+<key>NSAppTransportSecurity</key><dict><key>NSExceptionDomains</key><dict><key>ts.net</key><dict><key>NSIncludesSubdomains</key><true/><key>NSExceptionAllowsInsecureHTTPLoads</key><true/></dict></dict></dict>
 <key>LSMinimumSystemVersion</key><string>14.0</string><key>NSPrincipalClass</key><string>NSApplication</string>
 </dict></plist>
 PL

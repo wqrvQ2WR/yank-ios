@@ -111,54 +111,37 @@ final class DownloadManager: ObservableObject {
         defer { try? FileManager.default.removeItem(at: work); endBackground() }
         do {
             try FileManager.default.createDirectory(at: work, withIntermediateDirectories: true)
-            // 1) 정보
+            // 1) 정보 + 2) 직접 받기. 막히면(403 등) 설정한 파이 서버에 맡긴다.
             guard case .video(let vid) = InputParser.classify(start.url) else { throw YankError.invalidURL }
-            let info = try await YouTube.player(id: vid)
-            let plan = try FormatPicker.plan(info: info, format: start.format)
-            update(id) {
-                $0.title = info.title; $0.thumbnail = info.thumbnail; $0.uploader = info.author
-                $0.durationSeconds = info.durationSeconds; $0.totalBytes = plan.estimatedBytes; $0.state = .downloading
-            }
-            // 2) 받기
-            let meter = ProgressMeter()
-            let total = max(plan.estimatedBytes, 1)
-            let ticker = Task { [weak self] in
-                while !Task.isCancelled {
-                    let s = meter.snapshot()
-                    let remain = s.speed > 0 ? (total - s.done) / s.speed : -1
-                    await MainActor.run {
-                        self?.update(id) {
-                            guard $0.state == .downloading else { return }
-                            $0.progress = min(Double(s.done) / Double(total) * 100, 99.5)
-                            $0.speedBytesPerSec = s.speed; $0.etaSeconds = remain
-                        }
-                    }
-                    try? await Task.sleep(nanoseconds: 500_000_000)
+            var info: VideoInfo?
+            var out = work.appendingPathComponent("out.mp4")
+            var ext = start.format.isAudio ? "m4a" : "mp4"
+            var titleFromServer: String?
+            do {
+                let i = try await YouTube.player(id: vid)
+                info = i
+                let plan = try FormatPicker.plan(info: i, format: start.format)
+                update(id) {
+                    $0.title = i.title; $0.thumbnail = i.thumbnail; $0.uploader = i.author
+                    $0.durationSeconds = i.durationSeconds; $0.totalBytes = plan.estimatedBytes; $0.state = .downloading
                 }
+                ext = plan.ext
+                out = work.appendingPathComponent("out." + ext)
+                try await direct(id: id, plan: plan, work: work, out: out)
+            } catch let e where Self.shouldFallBack(e) {
+                guard let server = ServerClient(url: settings.serverURL, token: settings.serverToken), settings.serverEnabled else {
+                    throw YankError.notPlayable(L("error_blocked_no_server"))
+                }
+                update(id) { $0.viaServer = true; $0.state = .serverPreparing; $0.progress = 0 }
+                let (fileExt, title) = try await viaServer(id: id, videoId: vid, server: server, work: work, into: &out)
+                ext = fileExt; titleFromServer = title
             }
-            defer { ticker.cancel() }
-            let ext = plan.ext
-            let out = work.appendingPathComponent("out." + ext)
-            let ua = plan.userAgent
-            if let m = plan.muxed {
-                try await StreamDownloader.download(m, userAgent: ua, to: out) { meter.add($0) }
-            } else if let v = plan.video, let a = plan.audio {
-                let vf = work.appendingPathComponent("v.mp4"), af = work.appendingPathComponent("a.m4a")
-                async let x = StreamDownloader.download(v, userAgent: ua, to: vf) { meter.add($0) }
-                async let y = StreamDownloader.download(a, userAgent: ua, to: af) { meter.add($0) }
-                _ = try await (x, y)
-                update(id) { $0.state = .processing; $0.progress = 99.5; $0.speedBytesPerSec = 0; $0.etaSeconds = -1 }
-                try await Merger.merge(video: vf, audio: af, to: out)
-            } else if let a = plan.audio {
-                let raw = work.appendingPathComponent("raw.m4a")
-                try await StreamDownloader.download(a, userAgent: ua, to: raw) { meter.add($0) }
-                update(id) { $0.state = .processing; $0.progress = 99.5; $0.speedBytesPerSec = 0; $0.etaSeconds = -1 }
-                try await Merger.remuxAudio(raw, to: out)
-            }
+            let title = info?.title ?? titleFromServer ?? start.title
+            let author = info?.author ?? start.uploader ?? ""
             try Task.checkCancellation()
             // 3) 저장
             update(id) { $0.state = .exporting }
-            let name = Fmt.fileName(template: settings.filenameTemplate, title: info.title, uploader: info.author, id: vid, ext: ext)
+            let name = Fmt.fileName(template: settings.filenameTemplate, title: title, uploader: author, id: vid, ext: ext)
             let final = uniqueURL(Disk.documents.appendingPathComponent(name))
             try FileManager.default.moveItem(at: out, to: final)
             let size = (try? FileManager.default.attributesOfItem(atPath: final.path)[.size] as? Int64) ?? nil
@@ -178,6 +161,94 @@ final class DownloadManager: ObservableObject {
         } catch {
             update(id) { $0.state = .failed; $0.error = error.localizedDescription; $0.finishedAt = Date() }
         }
+    }
+
+    /// 직접 받아도 소용없는 오류(접근 제한·스트림 없음)인지.
+    nonisolated static func shouldFallBack(_ e: Error) -> Bool {
+        if e is CancellationError { return false }
+        switch e as? YankError {
+        case .http(let c)?: return c == 403 || c == 401 || c == 410
+        case .noStream?, .notPlayable?: return true
+        default: return false
+        }
+    }
+
+    /// 유튜브에서 직접 받아 합친다.
+    private func direct(id: String, plan: StreamPlan, work: URL, out: URL) async throws {
+        let meter = ProgressMeter()
+        let total = max(plan.estimatedBytes, 1)
+        let ticker = Task { [weak self] in
+            while !Task.isCancelled {
+                let s = meter.snapshot()
+                let remain = s.speed > 0 ? (total - s.done) / s.speed : -1
+                await MainActor.run {
+                    self?.update(id) {
+                        guard $0.state == .downloading else { return }
+                        $0.progress = min(Double(s.done) / Double(total) * 100, 99.5)
+                        $0.speedBytesPerSec = s.speed; $0.etaSeconds = remain
+                    }
+                }
+                try? await Task.sleep(nanoseconds: 500_000_000)
+            }
+        }
+        defer { ticker.cancel() }
+        let ua = plan.userAgent
+        if let m = plan.muxed {
+            try await StreamDownloader.download(m, userAgent: ua, to: out) { meter.add($0) }
+        } else if let v = plan.video, let a = plan.audio {
+            let vf = work.appendingPathComponent("v.mp4"), af = work.appendingPathComponent("a.m4a")
+            async let x = StreamDownloader.download(v, userAgent: ua, to: vf) { meter.add($0) }
+            async let y = StreamDownloader.download(a, userAgent: ua, to: af) { meter.add($0) }
+            _ = try await (x, y)
+            update(id) { $0.state = .processing; $0.progress = 99.5; $0.speedBytesPerSec = 0; $0.etaSeconds = -1 }
+            try await Merger.merge(video: vf, audio: af, to: out)
+        } else if let a = plan.audio {
+            let raw = work.appendingPathComponent("raw.m4a")
+            try await StreamDownloader.download(a, userAgent: ua, to: raw) { meter.add($0) }
+            update(id) { $0.state = .processing; $0.progress = 99.5; $0.speedBytesPerSec = 0; $0.etaSeconds = -1 }
+            try await Merger.remuxAudio(raw, to: out)
+        }
+    }
+
+    /// 파이 서버가 받아서 합친 파일을 받아 온다. 서버 준비 0~60%, 파일 전송 60~100%.
+    private func viaServer(id: String, videoId: String, server: ServerClient, work: URL,
+                           into out: inout URL) async throws -> (String, String?) {
+        let created = try await server.create(videoId: videoId, format: job(id)?.format ?? .best)
+        defer { Task { await server.delete(created.id) } }
+        var current = created
+        while current.state != "completed" {
+            try Task.checkCancellation()
+            if current.state == "failed" { throw YankError.notPlayable(current.error ?? "Server failed") }
+            update(id) {
+                $0.progress = min(current.progress * 0.6, 60); $0.speedBytesPerSec = current.speed
+                $0.etaSeconds = current.eta; $0.totalBytes = max(current.size, $0.totalBytes)
+                if let t = current.title, $0.title == $0.url { $0.title = t }
+            }
+            try await Task.sleep(nanoseconds: 1_000_000_000)
+            current = try await server.status(created.id)
+        }
+        let fileExt = ((current.file ?? "") as NSString).pathExtension.isEmpty ? "mp4" : (current.file! as NSString).pathExtension
+        out = work.appendingPathComponent("out." + fileExt)
+        update(id) { $0.state = .downloading; $0.progress = 60 }
+        let meter = ProgressMeter()
+        let total = max(current.size, 1)
+        let ticker = Task { [weak self] in
+            while !Task.isCancelled {
+                let s = meter.snapshot()
+                await MainActor.run {
+                    self?.update(id) {
+                        guard $0.state == .downloading else { return }
+                        $0.progress = 60 + min(Double(s.done) / Double(total) * 40, 39.5)
+                        $0.speedBytesPerSec = s.speed
+                        $0.etaSeconds = s.speed > 0 ? (total - s.done) / s.speed : -1
+                    }
+                }
+                try? await Task.sleep(nanoseconds: 500_000_000)
+            }
+        }
+        defer { ticker.cancel() }
+        try await server.download(current, to: out) { meter.add($0) }
+        return (fileExt, current.title)
     }
 
     private func uniqueURL(_ url: URL) -> URL {

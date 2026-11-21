@@ -46,12 +46,12 @@ struct JobRow: View {
                 Thumb(url: job.thumbnail)
                 VStack(alignment: .leading, spacing: 3) {
                     Text(job.title).font(.subheadline.weight(.semibold)).lineLimit(2)
-                    Text(L(job.state.titleKey)).font(.caption.weight(.semibold)).foregroundStyle(stateColor)
+                    Text(L(job.state.titleKey) + (job.viaServer ? " · " + L("via_server") : "")).font(.caption.weight(.semibold)).foregroundStyle(stateColor)
                 }
             }
-            if job.state == .downloading || job.state == .processing || job.state == .exporting {
+            if job.state == .downloading || job.state == .serverPreparing || job.state == .processing || job.state == .exporting {
                 ProgressView(value: job.progress, total: 100).tint(Brand.magenta)
-                if job.state == .downloading { detail }
+                if job.state == .downloading || job.state == .serverPreparing { detail }
             }
             if job.state == .completed {
                 HStack {

@@ -2,6 +2,8 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject var settings: AppSettings
+    @State private var serverStatus: String?
+    @State private var testing = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -27,6 +29,20 @@ struct SettingsView: View {
                     }
                     Text(L("settings_keep_open_hint")).font(.caption).foregroundStyle(.secondary)
                 }
+                Section(L("settings_server")) {
+                    Toggle(L("settings_server_use"), isOn: $settings.serverEnabled)
+                    TextField(L("settings_server_url"), text: $settings.serverURL)
+                        .textInputAutocapitalization(.never).autocorrectionDisabled().keyboardType(.URL)
+                    SecureField(L("settings_server_token"), text: $settings.serverToken)
+                        .textInputAutocapitalization(.never).autocorrectionDisabled()
+                    Button {
+                        Task { await testServer() }
+                    } label: {
+                        HStack { Text(L("settings_server_test")); Spacer(); if testing { ProgressView() } }
+                    }.disabled(testing || settings.serverToken.isEmpty)
+                    if let serverStatus { Text(serverStatus).font(.caption).foregroundStyle(.secondary) }
+                    Text(L("settings_server_desc")).font(.caption).foregroundStyle(.secondary)
+                }
                 Section(L("settings_appearance")) {
                     Picker(L("settings_theme"), selection: $settings.theme) {
                         ForEach(ThemeMode.allCases) { Text(L($0.titleKey)).tag($0) }
@@ -41,5 +57,15 @@ struct SettingsView: View {
                 }
             }
         }
+    }
+
+    private func testServer() async {
+        testing = true; serverStatus = nil
+        defer { testing = false }
+        guard let c = ServerClient(url: settings.serverURL, token: settings.serverToken) else {
+            serverStatus = LF("server_fail", L("invalid_url")); return
+        }
+        do { try await c.check(); serverStatus = L("server_ok") }
+        catch { serverStatus = LF("server_fail", error.localizedDescription) }
     }
 }
