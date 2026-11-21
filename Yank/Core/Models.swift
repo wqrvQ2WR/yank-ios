@@ -3,6 +3,7 @@ import Foundation
 enum YankError: LocalizedError {
     case invalidURL
     case notPlayable(String)
+    case unauthorized
     case noStream
     case http(Int)
     case parse(String)
@@ -13,6 +14,7 @@ enum YankError: LocalizedError {
         switch self {
         case .invalidURL: return "Invalid link"
         case .notPlayable(let r): return r
+        case .unauthorized: return "Wrong password"
         case .noStream: return "No downloadable stream"
         case .http(let c): return "HTTP \(c)"
         case .parse(let m): return "Parse error: \(m)"

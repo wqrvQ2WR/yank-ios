@@ -34,7 +34,7 @@ struct ServerClient {
     private func send<T: Decodable>(_ r: URLRequest, as: T.Type) async throws -> T {
         let (data, resp) = try await URLSession.shared.data(for: r)
         if let h = resp as? HTTPURLResponse, h.statusCode >= 400 {
-            if h.statusCode == 401 { throw YankError.notPlayable("Server token rejected") }
+            if h.statusCode == 401 { throw YankError.unauthorized }
             throw YankError.http(h.statusCode)
         }
         return try JSONDecoder().decode(T.self, from: data)
@@ -44,7 +44,7 @@ struct ServerClient {
     func check() async throws {
         let (_, resp) = try await URLSession.shared.data(for: request("jobs/none"))
         guard let h = resp as? HTTPURLResponse else { throw YankError.http(0) }
-        if h.statusCode == 401 { throw YankError.notPlayable("Token rejected") }
+        if h.statusCode == 401 { throw YankError.unauthorized }
         if h.statusCode != 404 && h.statusCode != 200 { throw YankError.http(h.statusCode) }
     }
 

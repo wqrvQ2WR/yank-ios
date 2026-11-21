@@ -10,6 +10,9 @@ import UIKit
 final class DownloadManager: ObservableObject {
     @Published private(set) var jobs: [DownloadJob]
     @Published var toast: String?
+    /// 서버 비밀번호가 필요할 때 true. 화면이 입력창을 띄운다.
+    @Published var needsPassword = false
+    private var passwordWaiters: [CheckedContinuation<Bool, Never>] = []
 
     let settings: AppSettings
     private var tasks: [String: Task<Void, Never>] = [:]
@@ -129,11 +132,19 @@ final class DownloadManager: ObservableObject {
                 out = work.appendingPathComponent("out." + ext)
                 try await direct(id: id, plan: plan, work: work, out: out)
             } catch let e where Self.shouldFallBack(e) {
-                guard let server = ServerClient(url: settings.serverURL, token: settings.serverToken), settings.serverEnabled else {
-                    throw YankError.notPlayable(L("error_blocked_no_server"))
-                }
+                guard settings.serverEnabled else { throw YankError.notPlayable(L("error_blocked_no_server")) }
                 update(id) { $0.viaServer = true; $0.state = .serverPreparing; $0.progress = 0 }
-                let (fileExt, title) = try await viaServer(id: id, videoId: vid, server: server, work: work, into: &out)
+                var result: (String, String?)?
+                for attempt in 0..<2 {
+                    let server = try await obtainServer()
+                    do {
+                        result = try await viaServer(id: id, videoId: vid, server: server, work: work, into: &out)
+                        break
+                    } catch YankError.unauthorized where attempt == 0 {
+                        settings.serverToken = ""   // 저장된 비밀번호가 틀리면 지우고 다시 묻는다
+                    }
+                }
+                guard let (fileExt, title) = result else { throw YankError.unauthorized }
                 ext = fileExt; titleFromServer = title
             }
             let title = info?.title ?? titleFromServer ?? start.title
@@ -249,6 +260,38 @@ final class DownloadManager: ObservableObject {
         defer { ticker.cancel() }
         try await server.download(current, to: out) { meter.add($0) }
         return (fileExt, current.title)
+    }
+
+    // MARK: 서버 비밀번호
+
+    /// 저장된 비밀번호로 서버 클라이언트를 만든다. 없으면 입력창을 띄우고 답을 기다린다.
+    private func obtainServer() async throws -> ServerClient {
+        while true {
+            if let s = ServerClient(url: settings.serverURL, token: settings.serverToken) { return s }
+            let ok = await withCheckedContinuation { (c: CheckedContinuation<Bool, Never>) in
+                passwordWaiters.append(c); needsPassword = true
+            }
+            if !ok { throw YankError.notPlayable(L("error_blocked_no_server")) }
+        }
+    }
+
+    /// 입력한 비밀번호가 맞으면 저장하고 기다리던 작업을 이어 가게 한다. 틀리면 오류 문구를 돌려준다.
+    func submitPassword(_ pw: String) async -> String? {
+        guard let c = ServerClient(url: settings.serverURL, token: pw) else { return L("invalid_url") }
+        do { try await c.check() }
+        catch YankError.unauthorized { return L("password_wrong") }
+        catch { return LF("server_fail", error.localizedDescription) }
+        settings.serverToken = pw.trimmingCharacters(in: .whitespacesAndNewlines)
+        needsPassword = false
+        let w = passwordWaiters; passwordWaiters = []
+        w.forEach { $0.resume(returning: true) }
+        return nil
+    }
+
+    func cancelPassword() {
+        needsPassword = false
+        let w = passwordWaiters; passwordWaiters = []
+        w.forEach { $0.resume(returning: false) }
     }
 
     private func uniqueURL(_ url: URL) -> URL {

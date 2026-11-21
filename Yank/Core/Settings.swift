@@ -34,6 +34,8 @@ final class AppSettings: ObservableObject {
     @Published var serverURL: String { didSet { d.set(serverURL, forKey: "serverURL") } }
     @Published var serverToken: String { didSet { d.set(serverToken, forKey: "serverToken") } }
 
+    static let defaultServerURL = "https://pi.taild4dc8e.ts.net/yank"
+
     init() {
         defaultFormat = DownloadFormat(rawValue: d.string(forKey: "defaultFormat") ?? "") ?? .best
         let c = d.integer(forKey: "concurrent")
@@ -43,7 +45,9 @@ final class AppSettings: ObservableObject {
         theme = ThemeMode(rawValue: d.string(forKey: "theme") ?? "") ?? .light
         autoDownloadNew = d.object(forKey: "autoDownloadNew") as? Bool ?? true
         serverEnabled = d.object(forKey: "serverEnabled") as? Bool ?? true
-        serverURL = d.string(forKey: "serverURL") ?? "http://pi.taild4dc8e.ts.net:8260"
+        let saved = d.string(forKey: "serverURL")
+        // 예전 기본값(테일스케일 전용 주소)은 공개 주소로 바꿔 준다.
+        serverURL = (saved == nil || saved == "http://pi.taild4dc8e.ts.net:8260") ? Self.defaultServerURL : saved!
         serverToken = d.string(forKey: "serverToken") ?? ""
     }
 }

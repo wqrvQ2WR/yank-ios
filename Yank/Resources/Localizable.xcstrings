@@ -1527,6 +1527,176 @@
         }
       }
     },
+    "password_cancel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not now"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "나중에"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "あとで"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ahora no"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "稍后"
+          }
+        }
+      }
+    },
+    "password_confirm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "확인"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "確認"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirmar"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "确认"
+          }
+        }
+      }
+    },
+    "password_desc": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "YouTube blocked direct download for this video, so the Yank server will fetch it. Enter the password once; it is remembered."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "유튜브가 이 영상의 직접 받기를 막아서 Yank 서버가 대신 받아요. 비밀번호를 한 번만 넣으면 기억해 둬요."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "YouTubeがこの動画の直接ダウンロードを拒否したため、Yankサーバーが代わりに取得します。パスワードは一度入力すれば記憶されます。"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "YouTube bloqueó la descarga directa de este vídeo, así que el servidor Yank lo obtendrá. Introduce la contraseña una vez; se recordará."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "YouTube 阻止了此视频的直接下载,将由 Yank 服务器代为下载。密码只需输入一次,之后会被记住。"
+          }
+        }
+      }
+    },
+    "password_title": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Server password"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "서버 비밀번호"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "サーバーのパスワード"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contraseña del servidor"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "服务器密码"
+          }
+        }
+      }
+    },
+    "password_wrong": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wrong password"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "비밀번호가 달라요"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "パスワードが違います"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contraseña incorrecta"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "密码错误"
+          }
+        }
+      }
+    },
     "paste": {
       "localizations": {
         "en": {
@@ -2994,31 +3164,31 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A server you run (yank-pi) downloads with yt-dlp and sends the file back. Needs Tailscale on this iPhone when away from home."
+            "value": "A server you run (yank-pi) downloads with yt-dlp and sends the file back. It is open to the internet, so no VPN is needed; you enter the password once."
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "직접 돌리는 서버(yank-pi)가 yt-dlp 로 받아서 파일을 보내 줘요. 밖에서는 이 iPhone 에서 테일스케일을 켜 둬야 해요."
+            "value": "직접 돌리는 서버(yank-pi)가 yt-dlp 로 받아서 파일을 보내 줘요. 인터넷에 열려 있어서 따로 연결할 필요 없고, 비밀번호는 한 번만 넣으면 돼요."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "自分で動かすサーバー(yank-pi)がyt-dlpでダウンロードしてファイルを送ります。外出先ではこのiPhoneでTailscaleをオンにしてください。"
+            "value": "自分で動かすサーバー(yank-pi)がyt-dlpでダウンロードしてファイルを送ります。インターネットに公開されているので接続設定は不要で、パスワードは一度入力するだけです。"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Un servidor propio (yank-pi) descarga con yt-dlp y envía el archivo. Fuera de casa necesitas Tailscale activo en este iPhone."
+            "value": "Un servidor propio (yank-pi) descarga con yt-dlp y envía el archivo. Está abierto a internet, así que no hace falta VPN; la contraseña se introduce una sola vez."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "你自己运行的服务器(yank-pi)用 yt-dlp 下载并回传文件。外出时需在此 iPhone 上开启 Tailscale。"
+            "value": "你自己运行的服务器(yank-pi)用 yt-dlp 下载并回传文件。它对互联网开放,无需 VPN,密码只需输入一次。"
           }
         }
       }
@@ -3062,31 +3232,31 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Token"
+            "value": "Password"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "토큰"
+            "value": "비밀번호"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "トークン"
+            "value": "パスワード"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Token"
+            "value": "Contraseña"
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "令牌"
+            "value": "密码"
           }
         }
       }

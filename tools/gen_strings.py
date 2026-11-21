@@ -36,10 +36,15 @@ extra = {
     "settings_server": {"en": "Yank server (for blocked videos)", "ko": "Yank 서버 (막힌 영상용)", "ja": "Yankサーバー (ブロックされた動画用)", "es": "Servidor Yank (vídeos bloqueados)", "zh-Hans": "Yank 服务器(用于被阻止的视频)"},
     "settings_server_use": {"en": "Use server when direct download is blocked", "ko": "직접 받기가 막히면 서버 사용", "ja": "直接ダウンロードが拒否されたらサーバーを使う", "es": "Usar servidor si la descarga directa se bloquea", "zh-Hans": "直接下载被阻止时使用服务器"},
     "settings_server_url": {"en": "Server address", "ko": "서버 주소", "ja": "サーバーアドレス", "es": "Dirección del servidor", "zh-Hans": "服务器地址"},
-    "settings_server_token": {"en": "Token", "ko": "토큰", "ja": "トークン", "es": "Token", "zh-Hans": "令牌"},
-    "settings_server_desc": {"en": "A server you run (yank-pi) downloads with yt-dlp and sends the file back. Needs Tailscale on this iPhone when away from home.", "ko": "직접 돌리는 서버(yank-pi)가 yt-dlp 로 받아서 파일을 보내 줘요. 밖에서는 이 iPhone 에서 테일스케일을 켜 둬야 해요.", "ja": "自分で動かすサーバー(yank-pi)がyt-dlpでダウンロードしてファイルを送ります。外出先ではこのiPhoneでTailscaleをオンにしてください。", "es": "Un servidor propio (yank-pi) descarga con yt-dlp y envía el archivo. Fuera de casa necesitas Tailscale activo en este iPhone.", "zh-Hans": "你自己运行的服务器(yank-pi)用 yt-dlp 下载并回传文件。外出时需在此 iPhone 上开启 Tailscale。"},
+    "settings_server_token": {"en": "Password", "ko": "비밀번호", "ja": "パスワード", "es": "Contraseña", "zh-Hans": "密码"},
+    "settings_server_desc": {"en": "A server you run (yank-pi) downloads with yt-dlp and sends the file back. It is open to the internet, so no VPN is needed; you enter the password once.", "ko": "직접 돌리는 서버(yank-pi)가 yt-dlp 로 받아서 파일을 보내 줘요. 인터넷에 열려 있어서 따로 연결할 필요 없고, 비밀번호는 한 번만 넣으면 돼요.", "ja": "自分で動かすサーバー(yank-pi)がyt-dlpでダウンロードしてファイルを送ります。インターネットに公開されているので接続設定は不要で、パスワードは一度入力するだけです。", "es": "Un servidor propio (yank-pi) descarga con yt-dlp y envía el archivo. Está abierto a internet, así que no hace falta VPN; la contraseña se introduce una sola vez.", "zh-Hans": "你自己运行的服务器(yank-pi)用 yt-dlp 下载并回传文件。它对互联网开放,无需 VPN,密码只需输入一次。"},
     "settings_server_test": {"en": "Test connection", "ko": "연결 확인", "ja": "接続を確認", "es": "Probar conexión", "zh-Hans": "测试连接"},
     "server_ok": {"en": "Connected", "ko": "연결됐어요", "ja": "接続できました", "es": "Conectado", "zh-Hans": "已连接"},
+    "password_title": {"en": "Server password", "ko": "서버 비밀번호", "ja": "サーバーのパスワード", "es": "Contraseña del servidor", "zh-Hans": "服务器密码"},
+    "password_desc": {"en": "YouTube blocked direct download for this video, so the Yank server will fetch it. Enter the password once; it is remembered.", "ko": "유튜브가 이 영상의 직접 받기를 막아서 Yank 서버가 대신 받아요. 비밀번호를 한 번만 넣으면 기억해 둬요.", "ja": "YouTubeがこの動画の直接ダウンロードを拒否したため、Yankサーバーが代わりに取得します。パスワードは一度入力すれば記憶されます。", "es": "YouTube bloqueó la descarga directa de este vídeo, así que el servidor Yank lo obtendrá. Introduce la contraseña una vez; se recordará.", "zh-Hans": "YouTube 阻止了此视频的直接下载,将由 Yank 服务器代为下载。密码只需输入一次,之后会被记住。"},
+    "password_wrong": {"en": "Wrong password", "ko": "비밀번호가 달라요", "ja": "パスワードが違います", "es": "Contraseña incorrecta", "zh-Hans": "密码错误"},
+    "password_confirm": {"en": "Confirm", "ko": "확인", "ja": "確認", "es": "Confirmar", "zh-Hans": "确认"},
+    "password_cancel": {"en": "Not now", "ko": "나중에", "ja": "あとで", "es": "Ahora no", "zh-Hans": "稍后"},
     "server_fail": {"en": "Connection failed: %@", "ko": "연결 실패: %@", "ja": "接続失敗: %@", "es": "Error de conexión: %@", "zh-Hans": "连接失败: %@"},
 }
 for k, v in extra.items():

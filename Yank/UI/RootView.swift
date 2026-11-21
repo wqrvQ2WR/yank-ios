@@ -20,6 +20,9 @@ struct RootView: View {
                 .tabItem { Label(L("nav_settings"), systemImage: "gearshape.fill") }.tag(3)
         }
         .overlay(alignment: .top) { ToastView(text: $manager.toast) }
+        .sheet(isPresented: $manager.needsPassword, onDismiss: { manager.cancelPassword() }) {
+            PasswordSheet().environmentObject(manager)
+        }
         .onChange(of: phase) { _, new in
             if new == .active { checkSubscriptions() }
         }
@@ -49,6 +52,50 @@ struct ToastView: View {
                     try? await Task.sleep(nanoseconds: 2_200_000_000)
                     withAnimation { text = nil }
                 }
+        }
+    }
+}
+
+/// 서버 비밀번호를 한 번 묻는 창. 맞으면 저장되고 다시는 뜨지 않는다.
+struct PasswordSheet: View {
+    @EnvironmentObject var manager: DownloadManager
+    @State private var password = ""
+    @State private var error: String?
+    @State private var busy = false
+    @FocusState private var focused: Bool
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    SecureField(L("settings_server_token"), text: $password)
+                        .textInputAutocapitalization(.never).autocorrectionDisabled()
+                        .focused($focused).submitLabel(.done).onSubmit { submit() }
+                    if let error { Text(error).font(.caption).foregroundStyle(.red) }
+                } footer: { Text(L("password_desc")) }
+            }
+            .navigationTitle(L("password_title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(L("password_cancel")) { manager.cancelPassword() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button { submit() } label: { if busy { ProgressView() } else { Text(L("password_confirm")) } }
+                        .disabled(busy || password.isEmpty)
+                }
+            }
+            .onAppear { focused = true }
+        }
+        .presentationDetents([.medium])
+    }
+
+    private func submit() {
+        guard !busy, !password.isEmpty else { return }
+        busy = true; error = nil
+        Task {
+            error = await manager.submitPassword(password)
+            busy = false
         }
     }
 }
