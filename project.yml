@@ -1,0 +1,36 @@
+name: Yank
+options:
+  bundleIdPrefix: com.hayoonjae
+  deploymentTarget:
+    iOS: "17.0"
+  developmentLanguage: en
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    CODE_SIGNING_ALLOWED: "NO"
+targets:
+  Yank:
+    type: application
+    platform: iOS
+    sources:
+      - path: Yank
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.hayoonjae.yank
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        TARGETED_DEVICE_FAMILY: "1,2"
+    info:
+      path: Yank/Info.plist
+      properties:
+        CFBundleDisplayName: Yank
+        CFBundleDevelopmentRegion: en
+        CFBundleLocalizations: [en, ko, ja, es, zh-Hans]
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
+        UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationPortrait, UIInterfaceOrientationPortraitUpsideDown, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+        NSPhotoLibraryAddUsageDescription: "Save downloaded videos to your Photos library."
+        ITSAppUsesNonExemptEncryption: false

@@ -1,0 +1,5 @@
+Yank.xcodeproj/
+build/
+dist/
+*.ipa
+.DS_Store

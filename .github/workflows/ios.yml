@@ -1,0 +1,37 @@
+name: ios
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Core logic self test
+        run: ./tools/test.sh selftest
+      - name: Generate project
+        run: xcodegen generate
+      - name: Build for simulator
+        run: |
+          xcodebuild -project Yank.xcodeproj -scheme Yank -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' -derivedDataPath build/sim build | tail -20
+      - name: Launch in simulator and screenshot
+        run: |
+          UDID=$(xcrun simctl list devices available | grep -m1 "iPhone" | grep -oE '[0-9A-F-]{36}')
+          xcrun simctl boot "$UDID"
+          xcrun simctl install "$UDID" build/sim/Build/Products/Debug-iphonesimulator/Yank.app
+          xcrun simctl launch "$UDID" com.hayoonjae.yank
+          sleep 6
+          xcrun simctl io "$UDID" screenshot screenshot.png
+      - uses: actions/upload-artifact@v4
+        with: { name: screenshot, path: screenshot.png }
+      - name: Build unsigned ipa (device)
+        run: |
+          xcodebuild -project Yank.xcodeproj -scheme Yank -sdk iphoneos -configuration Release \
+            -derivedDataPath build/dev CODE_SIGNING_ALLOWED=NO build | tail -5
+          mkdir -p Payload && cp -R build/dev/Build/Products/Release-iphoneos/Yank.app Payload/
+          zip -qr Yank-unsigned.ipa Payload
+      - uses: actions/upload-artifact@v4
+        with: { name: Yank-unsigned-ipa, path: Yank-unsigned.ipa }
